@@ -1,0 +1,31 @@
+From b7df6ecba71050042670cae8c6a1d10465a32085 Mon Sep 17 00:00:00 2001
+From: Lutz Wolf <lutz.wolf@damogran.de>
+Date: Fri, 12 Jun 2015 23:27:09 +0100
+Subject: [PATCH] remove FreeBSD dependency
+
+---
+ configure | 8 --------
+ 1 file changed, 8 deletions(-)
+
+diff --git a/configure b/configure
+index 94e4b1e..4f3de3e 100755
+--- a/configure
++++ b/configure
+@@ -65138,14 +65138,6 @@ else
+ fi
+ 
+ 
+-if test "$with_storage_zfs" = "check"; then
+-    with_storage_zfs=$with_freebsd
+-fi
+-
+-if test "$with_storage_zfs" = "yes" && test "$with_freebsd" = "no"; then
+-    as_fn_error $? "The ZFS storage driver can be enabled on FreeBSD only." "$LINENO" 5
+-fi
+-
+ if test "$with_storage_zfs" = "yes" ||
+    test "$with_storage_zfs" = "check"; then
+   # Extract the first word of "zfs", so it can be a program name with args.
+-- 
+1.8.3.1
+

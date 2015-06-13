@@ -108,6 +108,7 @@
 %define with_storage_iscsi    0%{!?_without_storage_iscsi:%{server_drivers}}
 %define with_storage_disk     0%{!?_without_storage_disk:%{server_drivers}}
 %define with_storage_mpath    0%{!?_without_storage_mpath:%{server_drivers}}
+%define with_storage_zfs      0%{!?_without_storage_zfs:%{server_drivers}}
 %if 0%{?fedora} >= 16
     %define with_storage_rbd      0%{!?_without_storage_rbd:%{server_drivers}}
 %else
@@ -282,6 +283,7 @@
     %define with_storage_lvm 0
     %define with_storage_iscsi 0
     %define with_storage_mpath 0
+    %define with_storage_zfs 0
     %define with_storage_rbd 0
     %define with_storage_sheepdog 0
     %define with_storage_gluster 0
@@ -320,7 +322,7 @@
     %define with_nodedev 0
 %endif
 
-%if %{with_storage_fs} || %{with_storage_mpath} || %{with_storage_iscsi} || %{with_storage_lvm} || %{with_storage_disk}
+%if %{with_storage_fs} || %{with_storage_mpath} || %{with_storage_zfs} || %{with_storage_iscsi} || %{with_storage_lvm} || %{with_storage_disk}
     %define with_storage 1
 %else
     %define with_storage 0
@@ -371,7 +373,7 @@
 Summary: Library providing a simple virtualization API
 Name: libvirt
 Version: 1.2.13.1
-Release: 1%{?dist}%{?extra_release}
+Release: zfs1%{?dist}%{?extra_release}
 License: LGPLv2+
 Group: Development/Libraries
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -381,6 +383,7 @@ URL: http://libvirt.org/
     %define mainturl stable_updates/
 %endif
 Source: http://libvirt.org/sources/%{?mainturl}libvirt-%{version}.tar.gz
+Patch0: 0001-remove-FreeBSD-dependency.patch
 
 %if %{with_libvirtd}
 Requires: libvirt-daemon = %{version}-%{release}
@@ -865,6 +868,11 @@ Requires: lvm2
 # For ISCSI driver
 Requires: iscsi-initiator-utils
             %endif
+            %if %{with_storage_zfs}
+# For ZFS driver
+Requires: zfs
+BuildRequires: zfs
+            %endif
             %if %{with_storage_disk}
 # For disk driver
 Requires: parted
@@ -1343,6 +1351,12 @@ rm -f $PATCHLIST
     %define _without_storage_mpath --without-storage-mpath
 %endif
 
+%if ! %{with_storage_zfs}
+    %define _without_storage_zfs --without-storage-zfs
+%else
+    %define _without_storage_zfs --with-storage-zfs=yes
+%endif
+
 %if ! %{with_storage_rbd}
     %define _without_storage_rbd --without-storage-rbd
 %endif
@@ -1488,6 +1502,7 @@ rm -f po/stamp-po
            %{?_without_storage_iscsi} \
            %{?_without_storage_disk} \
            %{?_without_storage_mpath} \
+           %{?_without_storage_zfs} \
            %{?_without_storage_rbd} \
            %{?_without_storage_sheepdog} \
            %{?_without_storage_gluster} \
@@ -2280,6 +2295,9 @@ exit 0
 %doc examples/systemtap
 
 %changelog
+* Sun Jun 7 2015 Lutz Wolf <lutz.wolf@damogran.de> - 1.2.13.1-zfs1
+- Added ZFS support
+
 * Tue Apr 28 2015 Cole Robinson <crobinso@redhat.com> - 1.2.13.1-1
 - Rebased to version 1.2.13.1
 - Fix getVersion() after installing qemu (bz #1000116)
